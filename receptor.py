@@ -1,14 +1,12 @@
 from demodulador import desmodulador
-from numpy import ndarray
-class receptor():
+import numpy as np
 
-    def __init__(self,cinta):
-        self.cinta=cinta
-        self.cabezal=0
-        self.estado_actual="q0_recibiendo_frecuencia"
-        self.memoria_frecuencia=""
-        self.memoria_bits=""
-
+class receptor:
+    def __init__(self, cinta):
+        self.cinta = cinta
+        self.cabezal = 0
+        self.estado_actual = "q0_recibiendo_frecuencia"
+        self.memoria_frecuencia = ""
 
     def paso(self):
         if self.cabezal >= len(self.cinta):
@@ -17,55 +15,49 @@ class receptor():
             self.cinta.insert(0, "_")
             self.cabezal = 0
             
-        simbolo_leido=str(self.cinta[self.cabezal])
-        escribir = simbolo_leido
-        movimiento = "DERECHA"
+        simbolo = self.cinta[self.cabezal]
+        
+        # Evitar error de casting al pasar arrays de numpy a string
+        if isinstance(simbolo, np.ndarray):
+            simbolo_leido = "ARRAY"
+        else:
+            simbolo_leido = str(simbolo)
+            
         nuevo_estado = self.estado_actual
         
-        if self.estado_actual=="q0_recibiendo_frecuencia":
-            if simbolo_leido=="f":
-                nuevo_estado="q1_leer_frecuencia"
+        if self.estado_actual == "q0_recibiendo_frecuencia":
+            if simbolo_leido == "f":
+                nuevo_estado = "q1_leer_frecuencia"
                 
         elif self.estado_actual == "q1_leer_frecuencia":
             if simbolo_leido == " ":
-                # Si encuentra un espacio, verifica si ya leyó números antes
                 if self.memoria_frecuencia != "":
                     nuevo_estado = "q2_procesar_datos"
             elif simbolo_leido.isdigit() or simbolo_leido == ".":
-            # Si lee un número (int) o un punto (float), lo acumula en memoria
                 self.memoria_frecuencia += simbolo_leido
-        if isinstance(simbolo_leido,ndarray):
-            self.estado_actual="q3_desmodulando"
-            desmodulador1=desmodulador(self.cadena[self.cabezal::])
-            nueva_cinta=desmodulador1.ejecutar()
-            self.cinta=nueva_cinta
-            
 
+        self.estado_actual = nuevo_estado
+        self.cabezal += 1 # Siempre avanza en este modo
 
-        if simbolo_leido=="qf_codificar":
-            pass
-        self.cinta[self.cabezal] = escribir
-        self.estado_actual=nuevo_estado
-
-        if movimiento == "DERECHA":
-            self.cabezal += 1
-        elif movimiento == "IZQUIERDA":
-            self.cabezal -= 1
-        
     def ejecutar(self):
-    
-        
-        # El bucle se detiene cuando llega al estado q2
+        # 1. Buscar frecuencia
         while self.estado_actual != "q2_procesar_datos":
             self.paso()
             
+        # 2. Delegar cinta al demodulador
+        demod = desmodulador(self.cinta[self.cabezal:], self.memoria_frecuencia)
+        cinta_bits = demod.ejecutar()
         
-        print(self.cinta)
-        return self.memoria_frecuencia
-
-if __name__ == "__main__":
-    # Simulamos la cinta que nos enviaría el Emisor/Oscilador
-    cinta_prueba = ['f', ' ', '2', '.', '4', ' ', '-cos(2.4t)', '+cos(2.4t)', '_']
-    
-    mi_receptor = receptor(cinta_prueba)
-    mi_receptor.ejecutar()
+        # 3. Sobrescribir cinta
+        self.cinta[self.cabezal:] = cinta_bits
+        
+        # 4. Traducir bits a string ASCII
+        bits = [str(x) for x in cinta_bits if x in ["0", "1"]]
+        cadena_completa = "".join(bits)
+        mensaje_final = ""
+        for i in range(0, len(cadena_completa), 8):
+            byte = cadena_completa[i:i+8]
+            if len(byte) == 8:
+                mensaje_final += chr(int(byte, 2))
+                
+        return self.cinta, bits, mensaje_final
