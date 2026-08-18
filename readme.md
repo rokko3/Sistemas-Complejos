@@ -1,21 +1,47 @@
-# Descripcion de Maquina de turing para envio de informacion digital
+# Simulador de Transmision BPSK con Maquinas de Turing
 
-## El transmisor tiene 3 Operaciones para enviar datos:
-* Crear la funcion de datos D(t) en voltios +1 para 1 y -1 para 0, en un tiempo t
-* Crear la frecuencia haciendo uso del oscilador
-* Usar el oscilador para preparar los datos de transmision
-* Enviar los datos
+Este proyecto es un simulador teorico-practico de telecomunicaciones digitales. Modela las capas de Aplicacion y Fisica de un sistema de transmision utilizando una arquitectura basada en Maquinas de Turing y procesamiento de senales digitales (DSP).
 
-## El oscilador
+## Descripcion General
 
-* Debe recibir la frecuencia para preparar la funcion de oscilamiento
-* Debe retornar la funcion de oscilamiento
-* Debe ser capaz de demodular la informacion
-* Debe multiplicar la funcion de datos por la funcion de oscilador
+El simulador demuestra como un texto plano se convierte en bits, luego en ondas de radiofrecuencia (modulacion BPSK), sobrevive a un canal con ruido y finalmente es demodulado para recuperar el mensaje original. Lo hace mediante cuatro modulos principales que simulan maquinas de estado:
 
-## El receptor
+1.  **Emisor**: Traduce texto humano a una cadena binaria (ASCII) y formatea la "cinta" preparandola para la transmision.
+2.  **Oscilador (Maquina de Turing)**: Lee la cinta formateada, extrae la frecuencia de trabajo y convierte los bits en arrays matematicos que representan ondas (Cosenos desfasados).
+3.  **Canal**: Aplica ruido estocastico a la senal para simular las condiciones de propagacion reales.
+4.  **Receptor y Demodulador**: Analiza la cinta recibida, recupera la frecuencia de transmision, emplea un Filtro Adaptado (multiplicacion e integracion) para discriminar el ruido y decodifica la senal nuevamente a texto plano.
 
-* Debe recibir la funcion de la señal recibida
-* Usar el oscilador para demodular la frecuencia
-* Mostrar los datos recibidos
+## Funcionamiento de la Interfaz Grafica
 
+La interfaz esta desarrollada con CustomTkinter y Matplotlib. Se divide en dos paneles principales:
+
+### Panel de Controles (Izquierdo)
+*   **Datos a enviar**: Cuadro de texto donde el usuario ingresa el mensaje a transmitir.
+*   **Frecuencia Portadora**: Control deslizante que determina la frecuencia de la onda portadora. El valor se actualiza en tiempo real.
+*   **Nivel de Ruido en el Aire**: Control deslizante que ajusta la amplitud del ruido blanco estocastico introducido en la senal.
+*   **Modular y Transmitir**: Inicia el proceso de codificacion y modulacion, lanzando la senal al "aire".
+*   **Recibir y Demodular**: Captura la senal ruidosa y realiza el procesamiento inverso para recuperar los datos.
+
+### Panel de Visualizacion (Derecho)
+Contiene tres lienzos de Matplotlib que se actualizan de forma reactiva:
+*   **Senal Digital (Banda Base)**: Muestra la cadena de bits puros (ondas cuadradas) lista para ser inyectada al oscilador.
+*   **Onda Transmitida (RF + Ruido)**: Visualiza la forma de la onda senoidal continua volando por el espacio con el nivel de ruido aplicado.
+*   **Senal Digital Recuperada**: Grafica los bits que sobrevivieron al filtro adaptado del receptor, demostrando la fiabilidad del algoritmo ante la interferencia.
+
+## Requerimientos e Instalacion
+
+El proyecto fue desarrollado utilizando Python 3. Se requieren las siguientes librerias para su funcionamiento:
+
+*   customtkinter
+*   numpy
+*   matplotlib
+
+Para instalar las dependencias, ejecute en su terminal:
+pip install customtkinter numpy matplotlib
+
+## Uso
+
+Para iniciar el simulador, simplemente ejecute el archivo principal de la interfaz desde la consola:
+python grafica.py
+
+Una vez abierta la interfaz, ingrese un texto, ajuste los parametros fisicos de transmision (frecuencia y ruido) y presione el boton de transmitir para observar las graficas generadas. Finalmente, utilice el boton del receptor para comprobar la recuperacion de datos.
