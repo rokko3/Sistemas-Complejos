@@ -1,7 +1,6 @@
 # Simulador de Transmision BPSK con Maquinas de Turing
 
-Este proyecto es un simulador teorico-practico de telecomunicaciones digitales. Modela las capas de Aplicacion y Fisica de un sistema de transmision utilizando una arquitectura basada en Maquinas de Turing y procesamiento de senales digitales (DSP).
-
+Hecho por: William Alfonso, Cristian Bello, Daniel Oviedo
 ## Descripcion General
 
 El simulador demuestra como un texto plano se convierte en bits, luego en ondas de radiofrecuencia (modulacion BPSK), sobrevive a un canal con ruido y finalmente es demodulado para recuperar el mensaje original. Lo hace mediante cuatro modulos principales que simulan maquinas de estado:
